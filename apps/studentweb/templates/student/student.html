@@ -1,0 +1,616 @@
+{% extends 'student/layout/basic_base_page.html' %}
+
+<!-- 设置标题 -->
+{% block title %}
+学生管理
+{% endblock %}
+
+<!-- 编写css -->
+{% block css %}
+<style>
+.layui-form .layui-form-label {
+             padding-left: 0;
+             padding-right: 0;
+}
+</style>
+{% endblock %}
+
+<!-- 编写breadcrumb -->
+{% block breadcrumb %}
+学生信息
+{% endblock %}
+
+<!-- 编写content -->
+{% block content %}
+<!-- 内容02：查询区域 -->
+    <div class="queryArea" style="margin-top: 20px;">
+        <form class="layui-form" id="queryForm">
+            {% csrf_token %}
+            <div class="layui-form-item">
+                <div class="layui-inline" style="width: 20%">
+                    <label class="layui-form-label" for="q_sno_name"><b>学号/姓名：</b></label>
+                        <div class="layui-input-block">
+                            <input class="layui-input" type="text" id="q_sno_name" name="q_sno_name">
+                        </div>
+                </div>
+                <div class="layui-inline" style="width: 20%">
+                    <label class="layui-form-label" for="q_faculty"><b>院系：</b></label>
+                        <div class="layui-input-block">
+                            <select  id="q_faculty" name="q_faculty" lay-search = "" lay-filter ="q_faculty">
+                                <option value="">请选择院系</option>
+                            </select>
+                        </div>
+                </div>
+                <div class="layui-inline" style="width: 20%">
+                    <label class="layui-form-label" for="q_major"><b>专业：</b></label>
+                        <div class="layui-input-block">
+                            <select  id="q_major" name="q_major" lay-search = "" >
+                                <option value="">请选择专业</option>
+                            </select>
+                        </div>
+                </div>
+                <div class="layui-inline">
+                    <input type="checkbox" id="q_status" name="q_status" lay-filter="q_status" title="在校" >
+                </div>
+                <div class="layui-inline">
+                    <button type="button" id="btnQuery" class="layui-btn">
+                        <i class="layui-icon layui-icon-search" ></i> 查询</button>
+                    <button type="button" id="btnAll" class="layui-btn">
+                        <i class="layui-icon layui-icon-list" ></i> 全部</button>
+                    <button type="button" id="btnAdd" class="layui-btn">
+                        <i class="layui-icon layui-icon-add-circle" ></i> 添加</button>
+                </div>
+            </div>
+        </form>
+    </div>
+<!-- 内容03：表格 -->
+<table class="layui-hide" id="tableStudent" lay-filter="tableStudent"></table>
+<!-- 内容04：表格中的按钮 -->
+    <script type="text/html" id="tableButton">
+      <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="detail">
+        <i class="layui-icon layui-icon-more"></i> 查看
+        </button>
+        <button class="layui-btn layui-btn-sm" lay-event="edit" >
+        <i class="layui-icon layui-icon-edit"></i> 编辑
+        </button>
+        <button class="layui-btn layui-btn-sm" lay-event="del">
+        <i class="layui-icon layui-icon-delete  "></i> 删除
+        </button>
+      </div>
+    </script>
+{#    <!-- 内容04：表格中的按钮 -->#}
+{#    <script type="text/html" id="tableButton">#}
+{#        <a id="btnEdit" class="layui-btn  layui-btn-xs" lay-event="detail">#}
+{#            <i class="fa fa-ellipsis-h" aria-hidden="true"></i>&nbsp; 查看#}
+{#        </a>#}
+{#        <a id="btnEdit" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">#}
+{#            <i class="fa fa-edit" aria-hidden="true"></i> &nbsp;编辑#}
+{#        </a>#}
+{#        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">#}
+{#            <i class="fa fa-trash" aria-hidden="true"></i>&nbsp; 删除#}
+{#        </a>#}
+{#    </script>#}
+
+    <!-- 内容05: 弹出层表单 -->
+    <div class="layerArea" style="display: none;padding: 40px 0 0 30px ">
+        <form class="layui-form" id="layerForm" lay-filter="layerForm">
+            {% csrf_token %}
+            <div class="layui-form-item">
+                <label class="layui-form-label" for="sno"><b>学号：</b></label>
+                <div class="layui-input-inline">
+                    <input type="text" id="sno" name="sno" class="layui-input">
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+                <label class="layui-form-label" for="name"><b>姓名：</b></label>
+                <div class="layui-input-inline">
+                    <input type="text" id="name" name="name" class="layui-input">
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" for="gender"><b>性别：</b></label>
+                <div class="layui-input-inline">
+                    <select id="gender" name="gender" lay-search="">
+                        <option value="">请选择</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+                <label class="layui-form-label" for="birthday"><b>出生日期：</b></label>
+                <div class="layui-input-inline">
+                    <input type="text" id="birthday" name="birthday" class="layui-input" placeholder="请选择日期">
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" for="mobile"><b>手机号码：</b></label>
+                <div class="layui-input-inline">
+                    <input type="text" id="mobile" name="mobile" class="layui-input">
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+                <label class="layui-form-label" for="email"><b>邮箱地址：</b></label>
+                <div class="layui-input-inline">
+                    <input type="text" id="email" name="email" class="layui-input">
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label" for="address"><b>家庭住址：</b></label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="address" name="address" class="layui-input" style="width:248%;">
+                        <span class="error-msg" style="color:red; position: absolute"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" for="faculty"><b>所在院系：</b></label>
+                <div class="layui-input-inline">
+                    <select type="text" id="faculty" name="faculty" lay-search="" lay-filter="faculty">
+                        <option value="">请选择</option>
+                    </select>
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+                <label class="layui-form-label" for="major"><b>所学专业：</b></label>
+                <div class="layui-input-inline">
+                    <select type="text" id="major" name="major" lay-search="" lay-filter="major">
+                        <option value="">请选择</option>
+                    </select>
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" for="start_date"><b>入学时间：</b></label>
+                <div class="layui-input-inline">
+                    <input type="text" id="start_date" name="start_date" class="layui-input" placeholder="请选择日期">
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+                <label class="layui-form-label" for="status"><b>状态：</b></label>
+                <div class="layui-input-inline">
+                    <select type="text" id="status" name="status" lay-search="">
+                        <option value="">请选择</option>
+                        <option value="在校">在校</option>
+                        <option value="毕业">毕业</option>
+                        <option value="休学">休学</option>
+                        <option value="开除">开除</option>
+                    </select>
+                    <span class="error-msg" style="color:red; position: absolute"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+<!-- 编写js -->
+{% block js %}
+    <script>
+    // 定义一个全局变量，用于存储状态值
+    let STATUS = false;
+    // 定义一个全局变量 --记录弹出层的操作 1表示添加 2查看详情 3修改
+    let Operator = 0;
+    // 入口函数
+    $(function () {
+        // 初始化表格
+        initTable();
+        // 加载院系信息到下拉框
+        loadFaculty();
+        // 通过所选院系加载专业信息到下拉框
+        loadMajorByFaculty();
+        // 所有按钮的响应
+        buttonClick();
+        // 初始化日期选择框
+        initDatePicker();
+    })
+    // 初始化表格函数实现
+    function initTable() {
+        layui.use('table',function () {
+            // 实例化一个表格
+            let table = layui.table;
+            // 表格渲染
+            table.render({
+                elem:"#tableStudent"
+                ,url:"{% url "list_student" %}"// 请求数据的后台接口
+                ,method:"post"
+                ,where:{
+                    "q_sno_name":$("#q_sno_name").val(),
+                    "q_faculty":$("#q_faculty").val(),
+                    "q_major":$("#q_major").val(),
+                    "q_status":STATUS,
+                    "csrfmiddlewaretoken":"{{ csrf_token }}"
+                }
+                ,cols: [[
+                        {type: 'numbers', width: 60, title: '编号', align: 'center', sort: true}
+                        , {field: 'sno', width: 120, title: '学号', align: 'center', sort: true}
+                        , {field: 'name', width: 100, title: '姓名', align: 'center', sort: true}
+                        , {field: 'gender', width: 80, title: '性别', align: 'center', sort: true}
+                        , {field: 'mobile', width: 120, title: '手机号码', align: 'center', sort: true}
+                        , {field: 'faculty__name', width: 180, title: '院系', align: 'center', sort: true}
+                        , {field: 'major__name', width: 100, title: '专业', align: 'center', sort: true}
+                        , {field: 'status', title: '状态', align: 'center', sort: true}
+                        , {fixed: 'right', title: '操作', width:"20%" , align: 'center', toolbar: '#tableButton'}
+                    ]]
+                ,page:true
+                ,limit:10
+                ,limits:[3,5,10,20]
+                ,even:true
+                ,done:function (res,current,count) {
+                        $('thead tr').css({'background-color':'#009688','color':'white'})
+                    }
+            })
+            // 监听表格的操作
+            table.on("tool(tableStudent)",function (obj) {
+                // 获取当前行的数据
+                let lineData = obj.data;
+
+                // 判断做了什么操作
+                if(obj.event==="detail"){
+                    // 修改Operator的值
+                    Operator=2;
+                    // 加载弹出层
+                    loadLayer("<b style='color:navy'>查看学生详情</b>",lineData)
+                    console.log(lineData);
+                }else if(obj.event==="edit"){
+                    // 修改Operator的值
+                    Operator=3;
+                    // 加载弹出层
+                    loadLayer("<b style='color:navy'>修改学生信息</b>",lineData)
+                }else if(obj.event==="del"){
+                    // 删除
+                    deleteValue(lineData);
+                }
+            })
+        })
+    }
+    // 加载院系信息到下拉框函数实现
+    function loadFaculty() {
+        layui.use('form',function () {
+            // 实例化一个表单对象
+            let form = layui.form;
+            // 发起ajax请求数据
+            $.ajax({
+                url:"{% url 'list_faculty' %}",
+                method: 'get',
+                dataType:'json',
+                success:function (res) {
+                    if(res.status){
+                        // console.log(res.data);
+                        // 通过jquery遍历加入下拉框
+                        $.each(res.data,(index,value) => {
+                            // 新建option标签
+                            $('<option>').attr('value',value.id).text(value.name).appendTo('#q_faculty')
+                        })
+                        // 重现渲染表单
+                        form.render();
+                    }else{
+                        layui.use('layui', function () {
+                                layer.msg(res.error, {icon: 2, area: ['350px', '150px'], time: -1, btn: ['关闭']});
+                            });
+
+                    }
+                }
+            })
+        })
+    }
+    // 通过所选院系加载专业信息到下拉框函数实现
+    function loadMajorByFaculty() {
+        layui.use('form',function () {
+            let form =layui.form;
+            // 监听查询区域的院系下拉选择框
+            form.on('select(q_faculty)',function (data) {
+                let selectData =data.value;
+                // 清空下拉框
+                $('#q_major').html("");
+                // 保留'请选择专业'的option标签
+                $('<option>').attr('value',"").text("请选择专业").appendTo('#q_major')
+                // 发起ajax请求
+                $.ajax({
+                    url:"{% url "query_major" %}",
+                    method:"post",
+                    data:{
+                        id:selectData,
+                        csrfmiddlewaretoken: "{{ csrf_token }}"
+                    },
+                    dataType: 'json',
+                    success:function (res) {
+                        if(res.status){
+                        // console.log(res.data);
+                        // 通过jquery遍历加入下拉框
+                        $.each(res.data,(index,value) => {
+                            // 新建option标签
+                            $('<option>').attr('value',value.id).text(value.name).appendTo('#q_major')
+                        })
+                        // 重新渲染表单
+                        form.render();
+                    }else{
+                        layui.use('layui', function () {
+                                layer.msg(res.error, {icon: 2, area: ['350px', '150px'], time: -1, btn: ['关闭']});
+                            });
+
+                    }
+                    }
+                })
+            });
+            // 监听弹出框的院系下拉选择框
+            form.on('select(faculty)',function (data) {
+                let selectData =data.value;
+                // 清空下拉框
+                $('#major').html("");
+                // 保留'请选择专业'的option标签
+                $('<option>').attr('value',"").text("请选择专业").appendTo('#major')
+                // 发起ajax请求
+                $.ajax({
+                    url:"{% url "query_major" %}",
+                    method:"post",
+                    data:{
+                        id:selectData,
+                        csrfmiddlewaretoken: "{{ csrf_token }}"
+                    },
+                    dataType: 'json',
+                    success:function (res) {
+                        if(res.status){
+                        // console.log(res.data);
+                        // 通过jquery遍历加入下拉框
+                        $.each(res.data,(index,value) => {
+                            // 新建option标签
+                            $('<option>').attr('value',value.id).text(value.name).appendTo('#major')
+                        })
+                        // 重新渲染表单
+                        form.render();
+                    }else{
+                        layui.use('layui', function () {
+                                layer.msg(res.error, {icon: 2, area: ['350px', '150px'], time: -1, btn: ['关闭']});
+                            });
+
+                    }
+                    }
+                })
+            });
+        })
+    }
+    // 所有按钮的响应实现
+    function buttonClick() {
+        // 查询按钮
+        $('#btnQuery').on("click",function () {
+            // 判断复选框是否选中
+            STATUS = $('#q_status').next().hasClass('layui-form-checked');
+            // 渲染表格
+            initTable();
+        });
+        // 显示全部按钮
+        $('#btnAll').on('click',function () {
+                location.reload();
+            })
+        // 添加按钮
+        $('#btnAdd').on("click",function () {
+            // 修改operator的值
+            Operator = 1;
+            loadLayer("<b style='color:navy'>添加学生</b>");
+        })
+    }
+    // 加载弹出框函数的实现
+    function loadLayer(title,value="") {
+        // 弹出层按钮准备
+        let btns = ["确定","取消"];
+        // 判断
+        if(Operator == 2){
+            btns = ["关闭"];
+        }
+        layui.use(["layer","form"],function () {
+            let layer = layui.layer;
+            let form = layui.form;
+            layer.open({
+                type: 1,
+                title:title,
+                area:["50%","80%"],
+                content:$(".layerArea"),
+                btn:btns,
+                resize:false,
+                success:function (index, layero) {
+                        // 在查看和修改弹出层时，使用form.val()赋值
+                        form.val('layerForm',value);
+                        // 手动对专业赋值
+                            $('<option>').attr('value',value.major).text(value.major__name).appendTo('#major');
+                            form.val('layerForm',{
+                                major:value.major
+                            })
+                            // 重新渲染
+                            form.render();
+                            // 如果是查看详情，禁用或只读
+                            if(Operator === 2) {
+                                $("#layerForm").find('input', 'select').prop('disabled', true);
+                            }else if(Operator === 3){
+                                $("#sno").attr("readonly",true);
+                            }
+                        // ========== 加载院系信息到下拉框 =========
+                        // 通过Ajax获取数据并加载到下拉框
+                        $.ajax({
+                            url: "{% url 'list_faculty' %}",
+                            method: 'get',
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.status) {
+                                    // 通过jquery遍历加入下拉框
+                                    $.each(res.data, (index, value) => {
+                                        // 新建option标签
+                                        let item = $('<option>').attr('value', value.id).text(value.name);
+                                        // 附加到查询框
+                                        item.appendTo($('#faculty'));
+
+                                    });
+                                    // 重新渲染
+                                    form.render();
+                                } else {
+                                    layui.use('layui', function () {
+                                        layer.msg(res.error, {
+                                            icon: 2,
+                                            area: ['350px', '150px'],
+                                            time: -1,
+                                            btn: ['关闭']
+                                        });
+                                    })
+                                }
+                            }
+                        })},
+                yes:function (index,layero) {
+                    // 如果是查看详情，点击按钮，直接关闭
+                    if(Operator === 2){
+                        layer.close(index);
+                        return;
+                    }
+                    // 进行表单的身份验证
+                    if(checkInput()){
+                        // 提交
+                        let commitURL ="";
+                        if(Operator === 1){
+                            commitURL = "{% url "add_student" %}"
+                        }else if(Operator === 3){
+                            commitURL = "{% url "edit_student" %}"
+                        }
+                        // 发起ajax请求
+                        $.ajax({
+                            url:commitURL,
+                            method:"post",
+                            data:$("#layerForm").serialize(),
+                            dataType:"json",
+                            success:function (res) {
+                                if(res.status){
+                                    location.reload();
+                                }else {
+                                    layer.msg(res.error, {
+                                            icon: 2,
+                                            area: ['350px', '150px'],
+                                            time: -1,
+                                            btn: ['关闭']
+                                        })
+                                }
+                            }
+                        })
+                    }
+                },
+                end:function (index,layero) {
+                    // 启用修改
+                    $("#layerForm").find('input','select').prop('disabled',false);
+                    // 取消学号只读
+                    $("#sno").attr("readonly",false);
+                    // 将赋值清空
+                    form.val('layerForm', {
+                            sno: "",
+                            name: "",
+                            gender: "",
+                            birthday: "",
+                            mobile: "",
+                            email: "",
+                            address: "",
+                            faculty: "",
+                            major: "",
+                            start_date: "",
+                            status: "",
+                        })
+                }
+            })
+        })
+    }
+    // 初始化日期函数的实现
+    function initDatePicker() {
+        layui.use("laydate",function () {
+            // 实例化一个对象
+            let laydate = layui.laydate;
+            // 渲染
+            laydate.render({
+                elem: "#birthday"
+            })
+            laydate.render({
+                elem: "#start_date"
+            })
+        })
+    }
+    // 提交前的验证函数实现
+    function checkInput() {
+        // 清空所有报错信息
+        $(".error-msg").text("");
+        // 定义一个变量
+        let checkResult = true;
+        // 验证学号 如果验证不通过 checkResult = false
+        let sno = $("#sno").val().trim();
+        if(sno.match(/^\d{7}$/) == null){
+            checkResult = false;
+            $("#sno").next().text("学号要求是7位长度的整数")
+        }
+        // 仅在添加学生时判断学号是否存在
+        if(Operator === 1){
+            $.ajax({
+                url:"{% url "is_sno_exists" %}",
+                method:"post",
+                data:{
+                    sno:$("#sno").val().trim(),
+                    csrfmiddlewaretoken:"{{ csrf_token }}"
+                },
+                dataType:"json",
+                success:function (res) {
+                    if(res.data){
+                        checkResult = false;
+                        $("#sno").next().text("学号已存在")
+                    }
+                }
+            })
+        }
+        // 验证姓名 如果验证不通过 checkResult = false
+        let name = $("#name").val().trim();
+        if(name.match(/^[\u4e00-\u9fa5]{2,5}$/) == null){
+            checkResult = false;
+            $("#name").next().text("姓名必须是2-5个汉字")
+        }
+        // 验证手机号码 如果验证不通过 checkResult = false
+        let mobile = $("#mobile").val().trim();
+        if(mobile.match(/^[1]\d{10}$/) == null){
+            checkResult = false;
+            $("#mobile").next().text("手机号必须是11位数字")
+        }
+        // 验证邮箱地址 如果验证不通过 checkResult = false
+        let email = $("#email").val().trim();
+        if(email.match(/^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/) == null){
+            checkResult = false;
+            $("#email").next().text("邮箱地址不符合格式要求")
+        }
+        // 验证家庭住址 如果验证不通过 checkResult = false
+        if($("#address").val().trim().length == 0){
+            checkResult = false;
+            $("#address").next().text("家庭住址不能为空")
+        }
+        return checkResult
+    }
+    // 删除学生信息函数实现
+    function deleteValue(value) {
+        // 确认的提示
+        let confirmStr = "您确认删除学生信息【" + value.sno + "-" + value.name + "】学生信息吗？"
+        // 确认
+        layui.use("layer",function () {
+            layer.confirm(confirmStr,{icon:3,area:["450px","200px"]},function (index) {
+                // 发起ajax请求
+                $.ajax({
+                    url:"{% url "del_student" %}",
+                    method:"post",
+                    data:{
+                      sno:value.sno,
+                      csrfmiddlewaretoken:"{{ csrf_token }}"
+                    },
+                    dataType:"json",
+                    success:function (res) {
+                        if(res.status){
+                            location.reload();
+                        }else {
+                            layui.use('layui', function () {
+                                layer.msg(res.error, {icon: 2, area: ['350px', '150px'], time: -1, btn: ['关闭']});
+                            });
+                        }
+                    }
+                })
+            })
+        })
+    }
+    </script>
+{% endblock %}

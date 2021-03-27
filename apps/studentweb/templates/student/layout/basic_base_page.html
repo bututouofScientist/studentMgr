@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <!--引入LayUI的CSS文件-->
+    <link rel="stylesheet" href="{% static 'plugin/layui/css/layui.css'%}">
+    {% block css %}{% endblock %}
+</head>
+<body>
+    <!--内容01：面包屑导航-->
+    <span class="layui-breadcrumb" style="margin-left: 15px">
+        <a href="#">首页</a>
+        <a href="#">基础数据</a>
+        <a><b>{% block breadcrumb %}{% endblock %}</b></a>
+</span>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>
+
+<!--引入LayUI的JS文件-->
+<script src="{% static 'plugin/layui/layui.js'%}"></script>
+<!--引入jquery文件-->
+<script src="{% static 'js/jquery-1.10.2.min.js'%}"></script>
+{% block js %}{% endblock %}
+
+
+
+
+<script>
+    // 入口函数
+    $(function () {
+        //=== 初始化导航(element)===
+        initBreadcrumb();
+    })
+    //=== 初始化导航(element)===
+    function initBreadcrumb() {
+        layui.use('element',function () {
+            //实例化一个element对象
+            let element = layui.element;
+        })
+    }
+</script>
